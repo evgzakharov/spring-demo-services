@@ -1,5 +1,7 @@
 package demo.card
 
+import demo.utils.log.ILogging
+import demo.utils.log.LoggingImp
 import kotlinx.coroutines.delay
 import org.springframework.http.HttpStatus
 import org.springframework.http.server.reactive.ServerHttpResponse
@@ -16,7 +18,7 @@ data class Card(
 @RestController
 class AuthController(
     private val cardConfig: CardConfig
-) {
+): ILogging by LoggingImp<AuthController>("service-card")  {
     private val cards: Map<String, Card> = listOf(
         Card(1L, "55593478", "03/21"),
         Card(2L, "55592020", "03/21"),
@@ -27,17 +29,17 @@ class AuthController(
     suspend fun info(
         @PathVariable("cardNumber") cardNumber: String,
         response: ServerHttpResponse
-    ): Response {
+    ): Response = logRequest {
         delay(cardConfig.timeout)
 
         val card = cards[cardNumber] ?: run {
             response.statusCode = HttpStatus.NOT_FOUND
-            return NotFoundResponse(
+            return@logRequest NotFoundResponse(
                 error = "card with number='$cardNumber' not found"
             )
         }
 
-        return CardResponse(
+        CardResponse(
             cardId = card.cardId,
             cardNumber = card.cardNumber,
             validTo = card.validTo

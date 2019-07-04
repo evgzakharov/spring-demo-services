@@ -1,5 +1,7 @@
 package demo.auth
 
+import demo.utils.log.ILogging
+import demo.utils.log.LoggingImp
 import kotlinx.coroutines.delay
 import org.springframework.http.HttpStatus
 import org.springframework.http.server.reactive.ServerHttpResponse
@@ -11,7 +13,7 @@ import kotlin.random.Random
 @RestController
 class AuthController(
     val authConfig: AuthConfig
-) {
+): ILogging by LoggingImp<AuthController>("service-auth") {
     private val userTokens = mapOf(
         "auth-token1" to 1L,
         "auth-token2" to 2L,
@@ -22,17 +24,17 @@ class AuthController(
     suspend fun info(
         @PathVariable(name = "token") token: String,
         response: ServerHttpResponse
-    ): Response {
+    ): Response = logRequest {
         delay(authConfig.timeout)
 
         val userId = userTokens[token] ?: run {
             response.statusCode = HttpStatus.FORBIDDEN
-            return ForbiddenResponse(
+            return@logRequest ForbiddenResponse(
                 error = "access is forbidden for token='$token' (token not find)"
             )
         }
 
-        return AuthResponse(
+        AuthResponse(
             userId = userId,
             cardAccess = Random.nextDouble() <= authConfig.successRate,
             paymentAccess = Random.nextDouble() <= authConfig.successRate,

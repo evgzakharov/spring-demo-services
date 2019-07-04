@@ -1,5 +1,7 @@
 package demo.payment
 
+import demo.utils.log.ILogging
+import demo.utils.log.LoggingImp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import org.springframework.http.HttpStatus
@@ -23,7 +25,7 @@ data class CardInfo(
 @RestController
 class PaymentController(
     private val paymentConfig: PaymentConfig
-) {
+): ILogging by LoggingImp<PaymentController>("service-payment") {
     val cardsInfo = ConcurrentHashMap<Long, CardInfo>(
         mapOf(
             1L to BigDecimal(1000L, MathContext.DECIMAL32),
@@ -38,38 +40,38 @@ class PaymentController(
     suspend fun info(
         @PathVariable("cardId") cardId: Long,
         response: ServerHttpResponse
-    ): Response {
+    ): Response = logRequest("info") {
         delay(paymentConfig.timeout)
 
         val currentAmount = cardsInfo[cardId]?.amount ?: run {
             response.statusCode = HttpStatus.BAD_REQUEST
-            return ErrorResponse("card with id='$cardId' not found")
+            return@logRequest ErrorResponse("card with id='$cardId' not found")
         }
 
         val transactions: List<TransactionInfo> = transactionHistory[cardId] ?: emptyList()
-        return PaymentTransactionResponse(currentAmount, transactions)
+        PaymentTransactionResponse(currentAmount, transactions)
     }
 
     @PostMapping
     suspend fun payment(
         @RequestBody paymentRequest: PaymentRequest,
         response: ServerHttpResponse
-    ): Response {
+    ): Response = logRequest("payment") {
         delay(paymentConfig.timeout)
 
         if (paymentRequest.cardIdFrom == paymentRequest.cardIdTo) {
             response.statusCode = HttpStatus.BAD_REQUEST
-            return ErrorResponse("card id same")
+            return@logRequest ErrorResponse("card id same")
         }
 
         val fromCardInfo = cardsInfo[paymentRequest.cardIdFrom] ?: run {
             response.statusCode = HttpStatus.BAD_REQUEST
-            return ErrorResponse("card with id='${paymentRequest.cardIdFrom}' not found")
+            return@logRequest ErrorResponse("card with id='${paymentRequest.cardIdFrom}' not found")
         }
 
         val toCardInfo = cardsInfo[paymentRequest.cardIdTo] ?: run {
             response.statusCode = HttpStatus.BAD_REQUEST
-            return ErrorResponse("card with id='${paymentRequest.cardIdTo}' not found")
+            return@logRequest ErrorResponse("card with id='${paymentRequest.cardIdTo}' not found")
         }
 
         listOf(fromCardInfo, toCardInfo)
@@ -80,7 +82,7 @@ class PaymentController(
             val newFromAmount = fromCardInfo.amount - paymentRequest.amount
             if (newFromAmount.signum() == -1) {
                 response.statusCode = HttpStatus.BAD_REQUEST
-                return ErrorResponse("card with id='${paymentRequest.cardIdFrom}' doesn't have money to send '${paymentRequest.amount}' to another card")
+                return@logRequest ErrorResponse("card with id='${paymentRequest.cardIdFrom}' doesn't have money to send '${paymentRequest.amount}' to another card")
             }
 
             val newToAmount = toCardInfo.amount + paymentRequest.amount
@@ -98,7 +100,7 @@ class PaymentController(
             fromCardInfo.amount = newFromAmount
             toCardInfo.amount = newToAmount
 
-            return PaymentSuccessResponse()
+            return@logRequest PaymentSuccessResponse()
         } finally {
             listOf(fromCardInfo, toCardInfo)
                 .forEach { ignoreError { it.cardMutex.unlock() } }

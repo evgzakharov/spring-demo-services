@@ -1,5 +1,7 @@
 package demo.card
 
+import demo.utils.log.ILogging
+import demo.utils.log.LoggingImp
 import kotlinx.coroutines.delay
 import org.springframework.http.HttpStatus
 import org.springframework.http.server.reactive.ServerHttpResponse
@@ -17,7 +19,7 @@ data class User(
 @RestController
 class UserController(
     private val cardConfig: CardConfig
-) {
+): ILogging by LoggingImp<UserController>("service-user") {
     val users = mapOf(
         1L to User("Vasia", "Pupkin", 18),
         2L to User("Alfa", "Alfa-bankivich", 100),
@@ -28,17 +30,17 @@ class UserController(
     suspend fun info(
         @PathVariable("id") userId: Long,
         response: ServerHttpResponse
-    ): Response {
+    ): Response = logRequest {
         delay(cardConfig.timeout)
 
         val user = users[userId] ?: run {
             response.statusCode = HttpStatus.NOT_FOUND
-            return NotFoundResponse(
+            return@logRequest NotFoundResponse(
                 error = "user with id='$userId' not found"
             )
         }
 
-        return UserResponse(
+        UserResponse(
             id = userId,
             name = user.name,
             surname = user.surname,
