@@ -31,25 +31,10 @@ subprojects {
         apply plugin: 'org.springframework.boot'
         apply plugin: 'io.spring.dependency-management'
 
-        sourceCompatibility = 1.8
-
         repositories {
             jcenter()
             maven {
                 url "https://repo.spring.io/milestone"
-            }
-        }
-
-        compileKotlin {
-            kotlinOptions {
-                freeCompilerArgs = ["-Xjsr305=strict", "-progressive"]
-                jvmTarget = "1.8"
-            }
-        }
-        compileTestKotlin {
-            kotlinOptions {
-                freeCompilerArgs = ["-Xjsr305=strict", "-progressive"]
-                jvmTarget = "1.8"
             }
         }
 
@@ -78,22 +63,22 @@ subprojects {
             jcenter()
         }
 
-        compileKotlin {
-            kotlinOptions {
-                freeCompilerArgs = ["-Xjsr305=strict", "-progressive"]
-                jvmTarget = "1.8"
-            }
-        }
-        compileTestKotlin {
-            kotlinOptions {
-                freeCompilerArgs = ["-Xjsr305=strict", "-progressive"]
-                jvmTarget = "1.8"
-            }
-        }
-
         dependencies {
             implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
             implementation "org.jetbrains.kotlin:kotlin-reflect"
+        }
+    }
+
+    compileKotlin {
+        kotlinOptions {
+            freeCompilerArgs = ["-Xjsr305=strict", "-progressive"]
+            jvmTarget = "1.8"
+        }
+    }
+    compileTestKotlin {
+        kotlinOptions {
+            freeCompilerArgs = ["-Xjsr305=strict", "-progressive"]
+            jvmTarget = "1.8"
         }
     }
 }
