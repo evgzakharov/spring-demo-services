@@ -1,4 +1,4 @@
-FROM openjdk:12-alpine
+FROM frolvlad/alpine-oraclejre8:8.192.12-slim
 
 COPY build/libs/service-card.jar /opt/service-card.jar
 

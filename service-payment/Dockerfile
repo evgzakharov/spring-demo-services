@@ -1,4 +1,4 @@
-FROM openjdk:12-alpine
+FROM frolvlad/alpine-oraclejre8:8.192.12-slim
 
 COPY build/libs/service-payment.jar /opt/service-payment.jar
 
