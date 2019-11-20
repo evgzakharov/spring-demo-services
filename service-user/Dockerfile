@@ -1,4 +1,4 @@
-FROM frolvlad/alpine-oraclejre8:8.192.12-slim
+FROM openjdk:12-alpine
 
 COPY build/libs/service-user.jar /opt/service-user.jar
 

@@ -1,2 +1,3 @@
-success-rate: ${SUCCESS_RATE}
-timout: ${TIMEOUT}
+service:
+  success-rate: ${SUCCESS_RATE}
+  timeout: ${TIMEOUT}

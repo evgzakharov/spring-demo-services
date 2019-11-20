@@ -30,7 +30,7 @@ class LoggingImp(
     override val serviceName: String
 ) : ILogging {
     companion object {
-        operator inline fun <reified T> invoke(serviceName: String): LoggingImp {
+        inline operator fun <reified T> invoke(serviceName: String): LoggingImp {
             return LoggingImp(LoggerFactory.getLogger(T::class.java), serviceName)
         }
     }
